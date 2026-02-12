@@ -1,4 +1,7 @@
 package com.traffic.trafficlight.repository;
 
-public class TrafficLightHistoryRepository {
+import com.traffic.trafficlight.entity.TrafficLightHistory;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface TrafficLightHistoryRepository extends JpaRepository<TrafficLightHistory, Long> {
 }

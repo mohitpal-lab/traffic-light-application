@@ -1,4 +1,7 @@
 package com.traffic.trafficlight.model;
 
-public class LightColor {
+public enum LightColor {
+    RED,
+    YELLOW,
+    GREEN
 }
