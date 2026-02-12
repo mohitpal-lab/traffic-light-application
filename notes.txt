@@ -1,0 +1,42 @@
+ Case 1 — NORTH‑SOUTH is GREEN
+ 
+ Transition(NS prepares to stop, EW stays stopped) -->
+ NORTH‑SOUTH: GREEN  --->  YELLOW
+EAST‑WEST  : RED     --->  RED  (no change)
+
+
+
+Case 2 — NORTH‑SOUTH is YELLOW(NORTH‑SOUTH is about to stop.after this step NS stops completely,EW starts moving)
+
+NORTH‑SOUTH: YELLOW ---> RED
+EAST‑WEST  : RED    ---> GREEN
+
+
+Case 3 — EAST‑WEST is GREEN
+
+Transition(EW prepares to stop, NS still waiting):
+
+EAST‑WEST  : GREEN  ---> YELLOW
+NORTH‑SOUTH: RED    ---> RED (no change)
+
+
+Case 4 — EAST‑WEST is YELLOW
+
+Transition(EAST‑WEST is about to stop.after this step, EW stops and NS starts moving)
+EAST‑WEST  : YELLOW ---> RED
+NORTH‑SOUTH: RED    ---> GREEN
+
+
+final steps --->
+
+NS_LEFT_GREEN – North–South cars turning left can go.
+NS_LEFT_YELLOW – North–South left‑turn cars finish and get ready to stop.
+NS_STRAIGHT_PERMISSIVE – North–South cars go straight; left turns allowed only when safe.
+NS_STRAIGHT_YELLOW – North–South straight cars slow down and prepare to stop.
+EW_LEFT_GREEN – East–West cars turning left can go.
+EW_LEFT_YELLOW – East–West left‑turn cars finish and get ready to stop.
+EW_STRAIGHT_PERMISSIVE – East–West cars go straight; left turns allowed only when safe.
+EW_STRAIGHT_YELLOW – East–West straight cars slow down and prepare to stop.
+
+
+

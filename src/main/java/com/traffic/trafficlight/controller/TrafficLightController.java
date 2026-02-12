@@ -3,7 +3,6 @@ package com.traffic.trafficlight.controller;
 import com.traffic.trafficlight.entity.TrafficLightHistory;
 import com.traffic.trafficlight.model.Direction;
 import com.traffic.trafficlight.model.LightColor;
-import com.traffic.trafficlight.model.TrafficLightState;
 import com.traffic.trafficlight.service.TrafficLightService;
 import org.springframework.web.bind.annotation.*;
 
