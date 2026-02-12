@@ -1,7 +1,9 @@
 package com.traffic.trafficlight.model;
 
 public enum Direction {
-    NORTH_SOUTH,
-    EAST_WEST
+    NS_LEFT,
+    NS_STRAIGHT,
+    EW_LEFT,
+    EW_STRAIGHT
 }
 

@@ -1,102 +1,150 @@
 package com.traffic.trafficlight.service;
 
 import com.traffic.trafficlight.entity.TrafficLightHistory;
-import com.traffic.trafficlight.model.*;
+import com.traffic.trafficlight.model.Direction;
+import com.traffic.trafficlight.model.LightColor;
+import com.traffic.trafficlight.model.TrafficPhase;
 import com.traffic.trafficlight.repository.TrafficLightHistoryRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class TrafficLightService {
 
     private final TrafficLightHistoryRepository trafficLightHistoryRepository;
-    private final Map<Direction, TrafficLightState> state = new ConcurrentHashMap<>();
+
+    private TrafficPhase currentPhase = TrafficPhase.NS_LEFT_GREEN;
     private boolean paused = false;
 
-    public TrafficLightService(TrafficLightHistoryRepository trafficLightHistoryRepository) {
-        this.trafficLightHistoryRepository = trafficLightHistoryRepository;
+    // Stores last known lights per direction for auditing
+    private Map<Direction, LightColor> previousLights = new HashMap<>();
 
-        // Initial state
-        state.put(Direction.NORTH_SOUTH,
-                new TrafficLightState(Direction.NORTH_SOUTH, LightColor.GREEN, System.currentTimeMillis()));
-        state.put(Direction.EAST_WEST,
-                new TrafficLightState(Direction.EAST_WEST, LightColor.RED, System.currentTimeMillis()));
+    public TrafficLightService(TrafficLightHistoryRepository repository) {
+        this.trafficLightHistoryRepository = repository;
+
+        previousLights = computeLightsForPhase(currentPhase);
     }
 
-    /** Audit a state change to the database. */
-    private void audit(Direction direction, LightColor oldState, LightColor newState) {
-        trafficLightHistoryRepository.save(new TrafficLightHistory(
-                null, direction, oldState, newState, System.currentTimeMillis()
-        ));
+    private Map<Direction, LightColor> computeLightsForPhase(TrafficPhase phase) {
+        Map<Direction, LightColor> map = new HashMap<>();
+
+        switch (phase) {
+
+            case NS_LEFT_GREEN:
+                map.put(Direction.NS_LEFT, LightColor.GREEN);
+                map.put(Direction.NS_STRAIGHT, LightColor.RED);
+                map.put(Direction.EW_LEFT, LightColor.RED);
+                map.put(Direction.EW_STRAIGHT, LightColor.RED);
+                break;
+
+            case NS_LEFT_YELLOW:
+                map.put(Direction.NS_LEFT, LightColor.YELLOW);
+                map.put(Direction.NS_STRAIGHT, LightColor.RED);
+                map.put(Direction.EW_LEFT, LightColor.RED);
+                map.put(Direction.EW_STRAIGHT, LightColor.RED);
+                break;
+
+            case NS_STRAIGHT_PERMISSIVE:
+                map.put(Direction.NS_LEFT, LightColor.GREEN);
+                map.put(Direction.NS_STRAIGHT, LightColor.GREEN);
+                map.put(Direction.EW_LEFT, LightColor.RED);
+                map.put(Direction.EW_STRAIGHT, LightColor.RED);
+                break;
+
+            case NS_STRAIGHT_YELLOW:
+                map.put(Direction.NS_LEFT, LightColor.YELLOW);
+                map.put(Direction.NS_STRAIGHT, LightColor.YELLOW);
+                map.put(Direction.EW_LEFT, LightColor.RED);
+                map.put(Direction.EW_STRAIGHT, LightColor.RED);
+                break;
+
+            case EW_LEFT_GREEN:
+                map.put(Direction.NS_LEFT, LightColor.RED);
+                map.put(Direction.NS_STRAIGHT, LightColor.RED);
+                map.put(Direction.EW_LEFT, LightColor.GREEN);
+                map.put(Direction.EW_STRAIGHT, LightColor.RED);
+                break;
+
+            case EW_LEFT_YELLOW:
+                map.put(Direction.NS_LEFT, LightColor.RED);
+                map.put(Direction.NS_STRAIGHT, LightColor.RED);
+                map.put(Direction.EW_LEFT, LightColor.YELLOW);
+                map.put(Direction.EW_STRAIGHT, LightColor.RED);
+                break;
+
+            case EW_STRAIGHT_PERMISSIVE:
+                map.put(Direction.NS_LEFT, LightColor.RED);
+                map.put(Direction.NS_STRAIGHT, LightColor.RED);
+                map.put(Direction.EW_LEFT, LightColor.GREEN);
+                map.put(Direction.EW_STRAIGHT, LightColor.GREEN);
+                break;
+
+            case EW_STRAIGHT_YELLOW:
+                map.put(Direction.NS_LEFT, LightColor.RED);
+                map.put(Direction.NS_STRAIGHT, LightColor.RED);
+                map.put(Direction.EW_LEFT, LightColor.YELLOW);
+                map.put(Direction.EW_STRAIGHT, LightColor.YELLOW);
+                break;
+        }
+
+        return map;
     }
 
-    /** Advance the sequence one step. */
     public synchronized void nextSequence() {
         if (paused) return;
 
-        TrafficLightState ns = state.get(Direction.NORTH_SOUTH);
-        TrafficLightState ew = state.get(Direction.EAST_WEST);
-
-        if (ns.getColor() == LightColor.GREEN) {
-            audit(Direction.NORTH_SOUTH, LightColor.GREEN, LightColor.YELLOW);
-            ns.setColor(LightColor.YELLOW);
-
-        } else if (ns.getColor() == LightColor.YELLOW) {
-            audit(Direction.NORTH_SOUTH, LightColor.YELLOW, LightColor.RED);
-            audit(Direction.EAST_WEST, LightColor.RED, LightColor.GREEN);
-            ns.setColor(LightColor.RED);
-            ew.setColor(LightColor.GREEN);
-
-        } else if (ew.getColor() == LightColor.GREEN) {
-            audit(Direction.EAST_WEST, LightColor.GREEN, LightColor.YELLOW);
-            ew.setColor(LightColor.YELLOW);
-
-        } else if (ew.getColor() == LightColor.YELLOW) {
-            audit(Direction.EAST_WEST, LightColor.YELLOW, LightColor.RED);
-            audit(Direction.NORTH_SOUTH, LightColor.RED, LightColor.GREEN);
-            ew.setColor(LightColor.RED);
-            ns.setColor(LightColor.GREEN);
+        switch (currentPhase) {
+            case NS_LEFT_GREEN: currentPhase = TrafficPhase.NS_LEFT_YELLOW; break;
+            case NS_LEFT_YELLOW: currentPhase = TrafficPhase.NS_STRAIGHT_PERMISSIVE; break;
+            case NS_STRAIGHT_PERMISSIVE: currentPhase = TrafficPhase.NS_STRAIGHT_YELLOW; break;
+            case NS_STRAIGHT_YELLOW: currentPhase = TrafficPhase.EW_LEFT_GREEN; break;
+            case EW_LEFT_GREEN: currentPhase = TrafficPhase.EW_LEFT_YELLOW; break;
+            case EW_LEFT_YELLOW: currentPhase = TrafficPhase.EW_STRAIGHT_PERMISSIVE; break;
+            case EW_STRAIGHT_PERMISSIVE: currentPhase = TrafficPhase.EW_STRAIGHT_YELLOW; break;
+            case EW_STRAIGHT_YELLOW: currentPhase = TrafficPhase.NS_LEFT_GREEN; break;
         }
+
+        Map<Direction, LightColor> newLights = computeLightsForPhase(currentPhase);
+
+        for (Direction dir : newLights.keySet()) {
+            LightColor oldColor = previousLights.get(dir);
+            LightColor newColor = newLights.get(dir);
+
+            if (oldColor != newColor) {
+                trafficLightHistoryRepository.save(
+                        new TrafficLightHistory(
+                                null,
+                                dir,
+                                oldColor,
+                                newColor,
+                                System.currentTimeMillis()
+                        )
+                );
+            }
+        }
+
+        previousLights = newLights;
     }
 
-    /** Pause both directions (all RED). */
     public synchronized void pause() {
         paused = true;
-
-        state.forEach((dir, st) -> {
-            if (st.getColor() != LightColor.RED) {
-                audit(dir, st.getColor(), LightColor.RED);
-                st.setColor(LightColor.RED);
-            }
-        });
     }
 
-    /** Resume: NS=GREEN, EW=RED */
     public synchronized void resume() {
         paused = false;
-
-        TrafficLightState ns = state.get(Direction.NORTH_SOUTH);
-        TrafficLightState ew = state.get(Direction.EAST_WEST);
-
-        if (ns.getColor() != LightColor.GREEN) {
-            audit(Direction.NORTH_SOUTH, ns.getColor(), LightColor.GREEN);
-            ns.setColor(LightColor.GREEN);
-        }
-
-        if (ew.getColor() != LightColor.RED) {
-            audit(Direction.EAST_WEST, ew.getColor(), LightColor.RED);
-            ew.setColor(LightColor.RED);
-        }
     }
 
-    /** Current state. */
-    public Map<Direction, TrafficLightState> getState() {
-        return state;
+    public Map<Direction, LightColor> getCurrentLightColors() {
+        return computeLightsForPhase(currentPhase);
     }
 
-    /** Audit history from DB. */
+    public TrafficPhase getCurrentPhase() {
+        return currentPhase;
+    }
+
     public List<TrafficLightHistory> getHistory() {
         return trafficLightHistoryRepository.findAll();
     }
