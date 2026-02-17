@@ -1,0 +1,113 @@
+{
+  "info": {
+    "_postman_id": "81f4c5a0-716f-4f7d-b093-e16cc1a86952",
+    "name": "Traffic Light API",
+    "description": "Postman collection for Traffic Light Controller API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "2207787"
+  },
+  "item": [
+    {
+      "name": "Get Current State",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/traffic/state",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "traffic",
+            "state"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Next Sequence",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/traffic/sequence/next",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "traffic",
+            "sequence",
+            "next"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Pause",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/traffic/pause",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "traffic",
+            "pause"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Resume",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/traffic/resume",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "traffic",
+            "resume"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get History",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/traffic/history",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "traffic",
+            "history"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8082"
+    }
+  ]
+}
