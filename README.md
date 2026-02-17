@@ -118,3 +118,21 @@ trafficlight
 │
 └── repository
     └── TrafficLightHistoryRepository.java
+	└── TrafficLightHistoryRepositoryImpl.java
+
+# How to run Application
+
+#STEP1. 
+Run TrafficLightControllerApplication as Java Application
+
+#STEP2. 
+Import collection from data/collection in postman
+
+#STEP3. 
+Perform required action using API end points:
+
+/api/traffic/state  -Get current state of traffic signals
+/api/traffic/sequence/next - Move to next traffic signal
+/api/traffic/pause  - Traffic signal state will not change 
+/api/traffic/resume - Resume the traffic signal
+/api/traffic/history - Get history for all traffic signal state changes
