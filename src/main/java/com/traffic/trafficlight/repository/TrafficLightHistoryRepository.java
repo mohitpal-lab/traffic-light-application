@@ -1,7 +1,14 @@
 package com.traffic.trafficlight.repository;
 
 import com.traffic.trafficlight.entity.TrafficLightHistory;
-import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
 
-public interface TrafficLightHistoryRepository extends JpaRepository<TrafficLightHistory, Long> {
+/**
+ * Same name as before. No longer extends JpaRepository and will read and write from file.
+ */
+public interface TrafficLightHistoryRepository {
+
+    TrafficLightHistory save(TrafficLightHistory record);
+
+    List<TrafficLightHistory> findAll();
 }

@@ -5,6 +5,7 @@ import com.traffic.trafficlight.model.Direction;
 import com.traffic.trafficlight.model.LightColor;
 import com.traffic.trafficlight.model.TrafficPhase;
 import com.traffic.trafficlight.repository.TrafficLightHistoryRepository;
+import com.traffic.trafficlight.repository.TrafficLightHistoryRepositoryImpl;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -14,7 +15,7 @@ import java.util.Map;
 @Service
 public class TrafficLightService {
 
-    private final TrafficLightHistoryRepository trafficLightHistoryRepository;
+    private final TrafficLightHistoryRepositoryImpl trafficLightHistoryRepository;
 
     private TrafficPhase currentPhase = TrafficPhase.NS_LEFT_GREEN;
     private boolean paused = false;
@@ -22,7 +23,7 @@ public class TrafficLightService {
     // Stores last known lights per direction for auditing
     private Map<Direction, LightColor> previousLights = new HashMap<>();
 
-    public TrafficLightService(TrafficLightHistoryRepository repository) {
+    public TrafficLightService(TrafficLightHistoryRepositoryImpl repository) {
         this.trafficLightHistoryRepository = repository;
 
         previousLights = computeLightsForPhase(currentPhase);

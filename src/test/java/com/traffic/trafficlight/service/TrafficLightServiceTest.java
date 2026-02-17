@@ -5,6 +5,7 @@ import com.traffic.trafficlight.model.LightColor;
 import com.traffic.trafficlight.model.TrafficPhase;
 import com.traffic.trafficlight.repository.TrafficLightHistoryRepository;
 
+import com.traffic.trafficlight.repository.TrafficLightHistoryRepositoryImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -15,12 +16,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TrafficLightServiceTest {
 
-    private TrafficLightHistoryRepository repository;
+    private TrafficLightHistoryRepositoryImpl repository;
     private TrafficLightService service;
 
     @BeforeEach
     void setup() {
-        repository = Mockito.mock(TrafficLightHistoryRepository.class);
+        repository = Mockito.mock(TrafficLightHistoryRepositoryImpl.class);
         service   = new TrafficLightService(repository);
     }
 
