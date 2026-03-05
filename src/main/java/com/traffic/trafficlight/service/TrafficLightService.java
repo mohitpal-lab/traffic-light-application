@@ -1,13 +1,18 @@
 package com.traffic.trafficlight.service;
 
 import com.traffic.trafficlight.entity.TrafficLightHistory;
+import com.traffic.trafficlight.exception.ApiConflictException;
+import com.traffic.trafficlight.exception.BadApiRequestException;
+import com.traffic.trafficlight.model.CurrentStateDTO;
 import com.traffic.trafficlight.model.Direction;
 import com.traffic.trafficlight.model.LightColor;
 import com.traffic.trafficlight.model.TrafficPhase;
 import com.traffic.trafficlight.repository.TrafficLightHistoryRepository;
 import com.traffic.trafficlight.repository.TrafficLightHistoryRepositoryImpl;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +21,9 @@ import java.util.Map;
 public class TrafficLightService {
 
     private final TrafficLightHistoryRepositoryImpl trafficLightHistoryRepository;
+
+    @Value("${traffic.skip.max:100}")
+    private int maxSkip;
 
     private TrafficPhase currentPhase = TrafficPhase.NS_LEFT_GREEN;
     private boolean paused = false;
@@ -121,7 +129,7 @@ public class TrafficLightService {
                                 dir,
                                 oldColor,
                                 newColor,
-                                System.currentTimeMillis()
+                                LocalDateTime.now().toString()
                         )
                 );
             }
@@ -134,8 +142,21 @@ public class TrafficLightService {
         paused = true;
     }
 
-    public synchronized void resume() {
+    public synchronized void resume() throws InterruptedException {
         paused = false;
+
+        new Thread(() ->{
+
+                while(!paused){
+
+                    try{
+                        nextSequence();
+                        Thread.sleep(1000);
+                    } catch(InterruptedException ex){
+                        break;
+                    }
+
+                }}).start();
     }
 
     public Map<Direction, LightColor> getCurrentLightColors() {
@@ -148,5 +169,22 @@ public class TrafficLightService {
 
     public List<TrafficLightHistory> getHistory() {
         return trafficLightHistoryRepository.findAll();
+    }
+
+    public synchronized CurrentStateDTO skipSignals(int steps){
+
+        if(steps<1 || steps >maxSkip) throw new BadApiRequestException("skip steps must be between 1 and"+maxSkip);
+
+        if(paused){
+            throw  new ApiConflictException("Traffic controller is paused");
+        }
+
+        for(int i=0; i< steps;i++){
+            nextSequence();
+        }
+        Map<Direction, LightColor> colors = getCurrentLightColors();
+
+        return new CurrentStateDTO(currentPhase,colors,steps);
+
     }
 }

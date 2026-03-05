@@ -18,5 +18,5 @@ public class TrafficLightHistory {
 
     private LightColor newState;
 
-    private long timestamp;
+    private String timestamp;
 }

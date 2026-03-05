@@ -1,9 +1,11 @@
 package com.traffic.trafficlight.controller;
 
 import com.traffic.trafficlight.entity.TrafficLightHistory;
+import com.traffic.trafficlight.model.CurrentStateDTO;
 import com.traffic.trafficlight.model.Direction;
 import com.traffic.trafficlight.model.LightColor;
 import com.traffic.trafficlight.service.TrafficLightService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,7 +40,11 @@ public class TrafficLightController {
 
     @PostMapping("/resume")
     public String resume() {
-        service.resume();
+        try {
+            service.resume();
+        }catch(Exception ex){
+
+        }
         return "System resumed";
     }
 
@@ -46,4 +52,13 @@ public class TrafficLightController {
     public List<TrafficLightHistory> history() {
         return service.getHistory();
     }
+
+
+    @PostMapping("/sequence/skip/{steps}")
+    public ResponseEntity<CurrentStateDTO> skipSignals(@PathVariable int steps) {
+
+        return ResponseEntity.ok(service.skipSignals(steps));
+    }
+
+
 }
