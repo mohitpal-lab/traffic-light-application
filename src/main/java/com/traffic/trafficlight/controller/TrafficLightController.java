@@ -60,5 +60,10 @@ public class TrafficLightController {
         return ResponseEntity.ok(service.skipSignals(steps));
     }
 
+    @GetMapping("/timing")
+    public Map<String, Integer> getTiming() {
+        return service.getTiming();
+    }
+
 
 }

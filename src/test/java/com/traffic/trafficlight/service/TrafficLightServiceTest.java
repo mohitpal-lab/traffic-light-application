@@ -1,5 +1,6 @@
 package com.traffic.trafficlight.service;
 
+import com.traffic.trafficlight.config.PhaseTimingConfig;
 import com.traffic.trafficlight.model.Direction;
 import com.traffic.trafficlight.model.LightColor;
 import com.traffic.trafficlight.model.TrafficPhase;
@@ -18,11 +19,12 @@ class TrafficLightServiceTest {
 
     private TrafficLightHistoryRepositoryImpl repository;
     private TrafficLightService service;
+    private PhaseTimingConfig phaseTimingConfig;
 
     @BeforeEach
     void setup() {
         repository = Mockito.mock(TrafficLightHistoryRepositoryImpl.class);
-        service   = new TrafficLightService(repository);
+        service   = new TrafficLightService(repository, phaseTimingConfig);
     }
 
     // Helper assertion to reduce repeated code

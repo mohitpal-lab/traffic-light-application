@@ -1,5 +1,6 @@
 package com.traffic.trafficlight.service;
 
+import com.traffic.trafficlight.config.PhaseTimingConfig;
 import com.traffic.trafficlight.entity.TrafficLightHistory;
 import com.traffic.trafficlight.exception.ApiConflictException;
 import com.traffic.trafficlight.exception.BadApiRequestException;
@@ -9,6 +10,7 @@ import com.traffic.trafficlight.model.LightColor;
 import com.traffic.trafficlight.model.TrafficPhase;
 import com.traffic.trafficlight.repository.TrafficLightHistoryRepository;
 import com.traffic.trafficlight.repository.TrafficLightHistoryRepositoryImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,8 @@ public class TrafficLightService {
 
     private final TrafficLightHistoryRepositoryImpl trafficLightHistoryRepository;
 
+    private final PhaseTimingConfig phaseTimingConfig;
+
     @Value("${traffic.skip.max:100}")
     private int maxSkip;
 
@@ -31,8 +35,10 @@ public class TrafficLightService {
     // Stores last known lights per direction for auditing
     private Map<Direction, LightColor> previousLights = new HashMap<>();
 
-    public TrafficLightService(TrafficLightHistoryRepositoryImpl repository) {
+
+    public TrafficLightService(TrafficLightHistoryRepositoryImpl repository, PhaseTimingConfig phaseTimingConfig) {
         this.trafficLightHistoryRepository = repository;
+        this.phaseTimingConfig =phaseTimingConfig;
 
         previousLights = computeLightsForPhase(currentPhase);
     }
@@ -150,10 +156,11 @@ public class TrafficLightService {
                 while(!paused){
 
                     try{
+                        int phaseTime= phaseTimingConfig.getDurationForPhase(this.currentPhase);
+                        Thread.sleep(phaseTime * 1000L);
                         nextSequence();
-                        Thread.sleep(1000);
                     } catch(InterruptedException ex){
-                        break;
+                        //Thread.sleep(1000);
                     }
 
                 }}).start();
@@ -187,4 +194,9 @@ public class TrafficLightService {
         return new CurrentStateDTO(currentPhase,colors,steps);
 
     }
+
+    public Map<String, Integer> getTiming() {
+        return phaseTimingConfig.getTiming();
+    }
+
 }
